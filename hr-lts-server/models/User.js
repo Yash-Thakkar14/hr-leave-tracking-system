@@ -21,25 +21,13 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ['employee', 'admin'],
+    required:true,
     default: 'employee'
   },
-  department: {
-    type: String,
-    default: ''
-  },
-  position: {
-    type: String,
-    default: ''
-  },
-  joiningDate: {
-    type: Date,
-    default: Date.now
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  }
+  profileImage:{type:String},
+  createAt:{type:Date,default:Date.now},
+  updatedAt:{type:Date,default:Date.now},
 }, { timestamps: true })
 
-const User = mongoose.model('User', userSchema)
+const User = mongoose.model("User", userSchema)
 export default User
