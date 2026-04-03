@@ -1,4 +1,4 @@
-import connectDB from "./config/db.js"
+import connectDB from "./db/db.js"
 import User from "./models/User.js"
 import bcrypt from 'bcrypt'
 
