@@ -1,6 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { FaCalendarAlt, FaTachometerAlt, FaUsers } from "react-icons/fa";
+import {
+  FaBuilding,
+  FaCalendarAlt,
+  FaTachometerAlt,
+  FaUsers,
+} from "react-icons/fa";
 import { FaGears } from "react-icons/fa6";
 
 const AdminSidebar = () => {
@@ -15,6 +20,7 @@ const AdminSidebar = () => {
           className={({ isActive }) =>
             `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 block py-2.5 px-4 rounded`
           }
+          end
         >
           <FaTachometerAlt />
           <span> Dashboard</span>
@@ -27,6 +33,15 @@ const AdminSidebar = () => {
         >
           <FaUsers />
           <span> Employees</span>
+        </NavLink>
+        <NavLink
+          to="/admin-dashboard/departments"
+          className={({ isActive }) =>
+            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 block py-2.5 px-4 rounded`
+          }
+        >
+          <FaBuilding />
+          <span> Departments</span>
         </NavLink>
         <NavLink
           to="/employee-dashboard"
