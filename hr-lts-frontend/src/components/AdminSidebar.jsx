@@ -32,7 +32,7 @@ const AdminSidebar = () => {
           }
         >
           <FaUsers />
-          <span> Employees</span>
+          <span> Employee</span>
         </NavLink>
         <NavLink
           to="/admin-dashboard/departments"
