@@ -1,6 +1,7 @@
 import Employee from "../models/Employee.js";
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
+import Department from "../models/Department.js";
 
 const addEmployee = async (req, res) => {
   try {
@@ -79,4 +80,42 @@ const getEmployee = async (req, res) => {
   }
 };
 
-export { addEmployee, getEmployees, getEmployee };
+const updateEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, designation, department } = req.body;
+    const employee = await Employee.findById({ _id: id });
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Employee not found" });
+    }
+    const user = await User.findById({ _id: employee.userId });
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+    const updateUser = await User.findByIdAndUpdate(
+      { _id: employee.userId },
+      { name },
+    );
+    const updateEmployee = await Employee.findByIdAndUpdate(
+      { _id: id },
+      { designation, department },
+    );
+    if (!updateUser || !updateEmployee) {
+      return res
+        .status(500)
+        .json({ success: false, error: "Error updating employee" });
+    }
+    return res
+      .status(200)
+      .json({ success: true, message: "Employee updated successfully" });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Server error while updating employee",
+    });
+  }
+};
+
+export { addEmployee, getEmployees, getEmployee, updateEmployee };

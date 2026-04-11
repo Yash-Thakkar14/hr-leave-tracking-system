@@ -13,7 +13,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRouter);
 app.use("/api/departments", departmentRouter);
-app.use("/api/employee", employeeRouter);
+app.use("/api/employees", employeeRouter);
 app.get("/", (req, res) => res.json({ message: "HR LTS API Running ✅" }));
 
 app.listen(process.env.PORT, () => {

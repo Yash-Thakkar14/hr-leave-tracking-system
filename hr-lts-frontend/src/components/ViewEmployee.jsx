@@ -11,7 +11,7 @@ const ViewEmployee = () => {
     const fetchEmployee = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/employee/${id}`,
+          `http://localhost:5000/api/employees/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -53,7 +53,7 @@ const ViewEmployee = () => {
               </div>
               <div className="flex space-x-3 mb-5">
                 <p className="text-lg font-bold">Department:</p>
-                <p className="font-medium">{employee.department.dep_name}</p>
+                <p className="font-medium">{employee.department.dept_name}</p>
               </div>
             </div>
           </div>
