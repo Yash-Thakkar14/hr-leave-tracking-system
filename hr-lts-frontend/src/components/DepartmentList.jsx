@@ -10,6 +10,12 @@ import { DepartmentButtons } from "../utils/DepartmentHelper";
 const DepartmentList = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filteredDepartments, setFilteredDepartments] = useState([]);
+
+  const onDepartmentDelete = (id) => {
+    setDepartments((prev) => prev.filter((dept) => dept._id !== id));
+    setFilteredDepartments((prev) => prev.filter((dept) => dept._id !== id));
+  };
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -28,9 +34,15 @@ const DepartmentList = () => {
             _id: dept._id,
             sno: sno++,
             dept_name: dept.dept_name,
-            action: <DepartmentButtons _id={dept._id} />,
+            action: (
+              <DepartmentButtons
+                _id={dept._id}
+                onDepartmentDelete={onDepartmentDelete}
+              />
+            ),
           }));
           setDepartments(data);
+          setFilteredDepartments(data);
         }
       } catch (error) {
         if (error.response && !error.response.data.success) {
@@ -43,6 +55,13 @@ const DepartmentList = () => {
 
     fetchDepartments();
   }, []);
+
+  const filterDepartments = (e) => {
+    const records = departments.filter((dept) =>
+      dept.dept_name.toLowerCase().includes(e.target.value.toLowerCase()),
+    );
+    setFilteredDepartments(records);
+  };
 
   return (
     <>
@@ -58,6 +77,7 @@ const DepartmentList = () => {
               type="text"
               placeholder="Search departments..."
               className="px-4 py-0.5 border"
+              onChange={filterDepartments}
             />
             <Link
               to="/admin-dashboard/add-department"
@@ -68,7 +88,11 @@ const DepartmentList = () => {
           </div>
 
           <div className="mt-5">
-            <DataTable columns={columns} data={departments} />
+            <DataTable
+              columns={columns}
+              data={filteredDepartments}
+              pagination
+            />
           </div>
         </div>
       )}

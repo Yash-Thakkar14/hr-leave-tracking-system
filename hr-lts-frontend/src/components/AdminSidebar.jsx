@@ -26,13 +26,13 @@ const AdminSidebar = () => {
           <span> Dashboard</span>
         </NavLink>
         <NavLink
-          to="/employee-dashboard"
+          to="/admin-dashboard/employees"
           className={({ isActive }) =>
             `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 block py-2.5 px-4 rounded`
           }
         >
           <FaUsers />
-          <span> Employee</span>
+          <span> Employees</span>
         </NavLink>
         <NavLink
           to="/admin-dashboard/departments"
