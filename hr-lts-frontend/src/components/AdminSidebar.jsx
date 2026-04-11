@@ -18,7 +18,7 @@ const AdminSidebar = () => {
         <NavLink
           to="/admin-dashboard"
           className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 block py-2.5 px-4 rounded`
+            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 py-2.5 px-4 rounded`
           }
           end
         >
@@ -28,7 +28,7 @@ const AdminSidebar = () => {
         <NavLink
           to="/admin-dashboard/employees"
           className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 block py-2.5 px-4 rounded`
+            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 py-2.5 px-4 rounded`
           }
         >
           <FaUsers />
@@ -37,7 +37,7 @@ const AdminSidebar = () => {
         <NavLink
           to="/admin-dashboard/departments"
           className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 block py-2.5 px-4 rounded`
+            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 py-2.5 px-4 rounded`
           }
         >
           <FaBuilding />
@@ -46,7 +46,7 @@ const AdminSidebar = () => {
         <NavLink
           to="/employee-dashboard"
           className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 block py-2.5 px-4 rounded`
+            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4  py-2.5 px-4 rounded`
           }
         >
           <FaCalendarAlt />
@@ -55,7 +55,7 @@ const AdminSidebar = () => {
         <NavLink
           to="/employee-dashboard"
           className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 block py-2.5 px-4 rounded`
+            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4  py-2.5 px-4 rounded`
           }
         >
           <FaGears />
