@@ -14,6 +14,7 @@ import EmployeeList from "./components/Employee/EmployeeList";
 import AddEmployee from "./components/Employee/AddEmployee";
 import ViewEmployee from "./components/Employee/ViewEmployee";
 import EditEmployee from "./components/Employee/EditEmployee";
+import EmployeeLeaves from "./components/Employee/EmployeeLeaves";
 import LeaveList from "./components/Leave/LeaveList";
 import AddLeave from "./components/Leave/AddLeave";
 import MyLeaves from "./components/Leave/MyLeaves";
@@ -44,6 +45,7 @@ function App() {
           <Route path="add-employee" element={<AddEmployee />} />
           <Route path="employees/:id" element={<ViewEmployee />} />
           <Route path="employees/edit/:id" element={<EditEmployee />} />
+          <Route path="employees/:id/leaves" element={<EmployeeLeaves />} />
           <Route path="leaves" element={<LeaveList />} />
         </Route>
 

@@ -6,62 +6,84 @@ import {
   FaTachometerAlt,
   FaUsers,
 } from "react-icons/fa";
-import { FaGears } from "react-icons/fa6";
+
+const navItems = [
+  {
+    to: "/admin-dashboard",
+    end: true,
+    icon: <FaTachometerAlt />,
+    label: "Dashboard",
+  },
+  {
+    to: "/admin-dashboard/employees",
+    end: false,
+    icon: <FaUsers />,
+    label: "Employees",
+  },
+  {
+    to: "/admin-dashboard/departments",
+    end: false,
+    icon: <FaBuilding />,
+    label: "Departments",
+  },
+  {
+    to: "/admin-dashboard/leaves",
+    end: false,
+    icon: <FaCalendarAlt />,
+    label: "Leaves",
+  },
+];
 
 const AdminSidebar = () => {
   return (
-    <div className="bg-gray-800 text-white h-screen fixed left-0 top-0 bottom-0 space-y-2 w-64">
-      <div className="px-4 py-4 border-b border-gray-700">
-        <h3 className="font-bold text-lg">HR Leave System</h3>
-        <p className="text-xs text-gray-400">Admin Portal</p>
+    <div className="bg-[#12253d] text-white h-screen fixed left-0 top-0 bottom-0 w-64 flex flex-col">
+      {/* Brand */}
+      <div className="px-5 py-5 border-b border-white/10">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="bg-[#1B3668] rounded-lg p-2">
+            <svg viewBox="0 0 30 30" fill="white" className="w-5 h-5">
+              <rect x="2" y="2" width="4" height="6" />
+              <rect x="8" y="2" width="4" height="6" />
+              <rect x="14" y="2" width="4" height="6" />
+              <rect x="20" y="2" width="4" height="6" />
+              <rect x="26" y="2" width="4" height="6" />
+              <rect x="2" y="8" width="28" height="14" />
+              <rect x="10" y="16" width="8" height="6" fill="#12253d" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="font-bold text-sm leading-tight">HR Leave System</h3>
+            <p className="text-xs text-blue-300">Admin Portal</p>
+          </div>
+        </div>
       </div>
-      <div className="px-2">
-        <NavLink
-          to="/admin-dashboard"
-          end
-          className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 py-2.5 px-4 rounded`
-          }
-        >
-          <FaTachometerAlt />
-          <span>Dashboard</span>
-        </NavLink>
-        <NavLink
-          to="/admin-dashboard/employees"
-          className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 py-2.5 px-4 rounded`
-          }
-        >
-          <FaUsers />
-          <span>Employees</span>
-        </NavLink>
-        <NavLink
-          to="/admin-dashboard/departments"
-          className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 py-2.5 px-4 rounded`
-          }
-        >
-          <FaBuilding />
-          <span>Departments</span>
-        </NavLink>
-        <NavLink
-          to="/admin-dashboard/leaves"
-          className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 py-2.5 px-4 rounded`
-          }
-        >
-          <FaCalendarAlt />
-          <span>Leaves</span>
-        </NavLink>
-        <NavLink
-          to="/admin-dashboard/settings"
-          className={({ isActive }) =>
-            `${isActive ? "bg-blue-500" : "hover:bg-gray-600"} flex items-center space-x-4 py-2.5 px-4 rounded`
-          }
-        >
-          <FaGears />
-          <span>Settings</span>
-        </NavLink>
+
+      {/* Nav links */}
+      <nav className="flex-1 px-3 py-4 space-y-1">
+        {navItems.map(({ to, end, icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) =>
+              `flex items-center gap-3 py-2.5 px-4 rounded-lg text-sm font-medium
+               transition-colors ${
+                 isActive
+                   ? "bg-[#1B3668] text-white"
+                   : "text-blue-200 hover:bg-white/10 hover:text-white"
+               }`
+            }
+          >
+            <span className="text-base">{icon}</span>
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="px-5 py-4 border-t border-white/10">
+        <p className="text-xs text-blue-400">University of Nottingham</p>
+        <p className="text-xs text-blue-500">UK | China | Malaysia</p>
       </div>
     </div>
   );
