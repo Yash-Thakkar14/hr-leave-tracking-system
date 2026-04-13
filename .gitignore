@@ -1,1 +1,9 @@
 hr-lts-server/.env
+hr-lts-server/node_modules/
+hr-lts-server/dist/
+hr-lts-server/*.log
+hr-lts-frontend/node_modules/
+hr-lts-frontend/build/
+hr-lts-frontend/dist/
+hr-lts-frontend/.env
+hr-lts-frontend/*.log
