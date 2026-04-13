@@ -1,11 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import DataTable from "react-data-table-component";
-import { columns } from "../utils/DepartmentHelper";
+import { columns, DepartmentButtons } from "../../utils/DepartmentHelper";
 import { useEffect } from "react";
 import { useState } from "react";
 import axios from "axios";
-import { DepartmentButtons } from "../utils/DepartmentHelper";
 
 const DepartmentList = () => {
   const [departments, setDepartments] = useState([]);

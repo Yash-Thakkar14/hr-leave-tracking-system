@@ -6,21 +6,26 @@ import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import PrivateRoutes from "./utils/PrivateRoutes";
 import RoleBaseRoutes from "./utils/RoleBaseRoutes";
-import AdminSummary from "./components/AdminSummary";
-import DepartmentList from "./components/DepartmentList";
-import AddDepartment from "./components/AddDepartment";
-import EditDepartment from "./components/EditDepartment";
-import EmployeeList from "./components/EmployeeList";
-import AddEmployee from "./components/AddEmployee";
-import ViewEmployee from "./components/ViewEmployee";
-import EditEmployee from "./components/EditEmployee";
+import AdminSummary from "./components/Admin/AdminSummary";
+import DepartmentList from "./components/Department/DepartmentList";
+import AddDepartment from "./components/Department/AddDepartment";
+import EditDepartment from "./components/Department/EditDepartment";
+import EmployeeList from "./components/Employee/EmployeeList";
+import AddEmployee from "./components/Employee/AddEmployee";
+import ViewEmployee from "./components/Employee/ViewEmployee";
+import EditEmployee from "./components/Employee/EditEmployee";
+import LeaveList from "./components/Leave/LeaveList";
+import AddLeave from "./components/Leave/AddLeave";
+import MyLeaves from "./components/Leave/MyLeaves";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/admin-dashboard" />} />
+        <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
+
+        {/* Admin routes */}
         <Route
           path="/admin-dashboard"
           element={
@@ -31,37 +36,32 @@ function App() {
             </PrivateRoutes>
           }
         >
-          <Route index element={<AdminSummary />}></Route>
-          <Route
-            path="/admin-dashboard/departments"
-            element={<DepartmentList />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/add-department"
-            element={<AddDepartment />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/department/:id"
-            element={<EditDepartment />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/employees"
-            element={<EmployeeList />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/add-employee"
-            element={<AddEmployee />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/employees/:id"
-            element={<ViewEmployee />}
-          ></Route>
-          <Route
-            path="/admin-dashboard/employees/edit/:id"
-            element={<EditEmployee />}
-          ></Route>
+          <Route index element={<AdminSummary />} />
+          <Route path="departments" element={<DepartmentList />} />
+          <Route path="add-department" element={<AddDepartment />} />
+          <Route path="department/:id" element={<EditDepartment />} />
+          <Route path="employees" element={<EmployeeList />} />
+          <Route path="add-employee" element={<AddEmployee />} />
+          <Route path="employees/:id" element={<ViewEmployee />} />
+          <Route path="employees/edit/:id" element={<EditEmployee />} />
+          <Route path="leaves" element={<LeaveList />} />
         </Route>
-        <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+
+        {/* Employee routes */}
+        <Route
+          path="/employee-dashboard"
+          element={
+            <PrivateRoutes>
+              <RoleBaseRoutes requiredRole={["employee"]}>
+                <EmployeeDashboard />
+              </RoleBaseRoutes>
+            </PrivateRoutes>
+          }
+        >
+          <Route index element={<MyLeaves />} />
+          <Route path="apply" element={<AddLeave />} />
+          <Route path="my-leaves" element={<MyLeaves />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

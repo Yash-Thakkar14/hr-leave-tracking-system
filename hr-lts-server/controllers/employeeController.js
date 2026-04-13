@@ -16,13 +16,25 @@ const addEmployee = async (req, res) => {
       role,
     } = req.body;
 
-    const user = await User.findOne({ email });
-    if (user) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Email already exists" });
+    // Check for duplicate email
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: "A user with this email already exists",
+      });
     }
 
+    // Check for duplicate employeeId
+    const existingEmployee = await Employee.findOne({ employeeId });
+    if (existingEmployee) {
+      return res.status(400).json({
+        success: false,
+        error: "Employee ID already in use. Please use a different one.",
+      });
+    }
+
+    // Hash password without any length validation — length is the admin's responsibility
     const hashPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
@@ -41,13 +53,25 @@ const addEmployee = async (req, res) => {
       department,
     });
     await newEmployee.save();
+
     return res
       .status(200)
       .json({ success: true, message: "Employee created successfully" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, error: "Server error while creating employee" });
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0] || "field";
+      return res.status(400).json({
+        success: false,
+        error: `Duplicate value: ${field} already exists.`,
+      });
+    }
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors)
+        .map((e) => e.message)
+        .join(", ");
+      return res.status(400).json({ success: false, error: messages });
+    }
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
 
@@ -68,7 +92,7 @@ const getEmployees = async (req, res) => {
 const getEmployee = async (req, res) => {
   const { id } = req.params;
   try {
-    const employee = await Employee.findById({ _id: id })
+    const employee = await Employee.findById(id)
       .populate("userId", { password: 0 })
       .populate("department");
     return res.status(200).json({ success: true, employee });
@@ -84,29 +108,22 @@ const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, designation, department } = req.body;
-    const employee = await Employee.findById({ _id: id });
+
+    const employee = await Employee.findById(id);
     if (!employee) {
       return res
         .status(404)
         .json({ success: false, error: "Employee not found" });
     }
-    const user = await User.findById({ _id: employee.userId });
+
+    const user = await User.findById(employee.userId);
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
-    const updateUser = await User.findByIdAndUpdate(
-      { _id: employee.userId },
-      { name },
-    );
-    const updateEmployee = await Employee.findByIdAndUpdate(
-      { _id: id },
-      { designation, department },
-    );
-    if (!updateUser || !updateEmployee) {
-      return res
-        .status(500)
-        .json({ success: false, error: "Error updating employee" });
-    }
+
+    await User.findByIdAndUpdate(employee.userId, { name });
+    await Employee.findByIdAndUpdate(id, { designation, department });
+
     return res
       .status(200)
       .json({ success: true, message: "Employee updated successfully" });

@@ -4,6 +4,7 @@ import connectDB from "./db/db.js";
 import authRouter from "./routes/auth.js";
 import departmentRouter from "./routes/department.js";
 import employeeRouter from "./routes/employee.js";
+import leaveRouter from "./routes/leave.js";
 
 connectDB();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/api/auth", authRouter);
 app.use("/api/departments", departmentRouter);
 app.use("/api/employees", employeeRouter);
+app.use("/api/leaves", leaveRouter);
 app.get("/", (req, res) => res.json({ message: "HR LTS API Running ✅" }));
 
 app.listen(process.env.PORT, () => {
