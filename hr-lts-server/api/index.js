@@ -10,8 +10,6 @@ import leaveRouter from "../routes/leave.js";
 
 const app = express();
 
-connectDB();
-
 app.use(
   cors({
     origin: "*",
@@ -19,6 +17,21 @@ app.use(
 );
 
 app.use(express.json());
+
+// ✅ FIXED CONNECTION
+let isConnected = false;
+
+const connectDatabase = async () => {
+  if (!isConnected) {
+    await connectDB();
+    isConnected = true;
+  }
+};
+
+app.use(async (req, res, next) => {
+  await connectDatabase();
+  next();
+});
 
 app.use("/api/auth", authRouter);
 app.use("/api/departments", departmentRouter);
