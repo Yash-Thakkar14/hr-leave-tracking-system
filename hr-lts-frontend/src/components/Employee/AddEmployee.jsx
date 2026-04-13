@@ -13,13 +13,14 @@ const AddEmployee = () => {
 
   const navigate = useNavigate();
 
+  // ── FIX: handle department fetch failures so the form stays usable ──
   useEffect(() => {
     const getDepartments = async () => {
       setDeptLoading(true);
       try {
         const depts = await fetchDepartments();
         setDepartments(depts || []);
-      } catch (error) {
+      } catch (err) {
         setError("Could not load departments. Please refresh the page.");
       } finally {
         setDeptLoading(false);
@@ -39,7 +40,7 @@ const AddEmployee = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${API_BASE}/api/employee/add`,
+        `${API_BASE}/api/employees/add`,
         formData,
         {
           headers: {
@@ -50,10 +51,10 @@ const AddEmployee = () => {
       if (response.data.success) {
         navigate("/admin-dashboard/employees");
       }
-    } catch (error) {
+    } catch (err) {
       // ── FIX: was silently console.log'ing — now shown to user ──
       setError(
-        error.response?.data?.error ||
+        err.response?.data?.error ||
           "Failed to add employee. Please check all fields and try again.",
       );
     } finally {
