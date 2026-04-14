@@ -13,7 +13,6 @@ const AddEmployee = () => {
 
   const navigate = useNavigate();
 
-  // ── FIX: handle department fetch failures so the form stays usable ──
   useEffect(() => {
     const getDepartments = async () => {
       setDeptLoading(true);
@@ -52,7 +51,6 @@ const AddEmployee = () => {
         navigate("/admin-dashboard/employees");
       }
     } catch (err) {
-      // ── FIX: was silently console.log'ing — now shown to user ──
       setError(
         err.response?.data?.error ||
           "Failed to add employee. Please check all fields and try again.",
@@ -140,7 +138,7 @@ const AddEmployee = () => {
                   type="text"
                   name="employeeId"
                   onChange={handleChange}
-                  placeholder="e.g. EMP-001"
+                  placeholder="e.g. 0001"
                   className={inputCls}
                   required
                 />
@@ -215,7 +213,7 @@ const AddEmployee = () => {
                   type="password"
                   name="password"
                   onChange={handleChange}
-                  placeholder="Min 6 characters"
+                  placeholder="Enter a password"
                   className={inputCls}
                   required
                 />
