@@ -1,122 +1,167 @@
-import React from "react";
-import { useEffect } from "react";
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import API_BASE from "../../utils/api";
 
 const EditDepartment = () => {
   const { id } = useParams();
-  const [department, setDepartment] = useState(null);
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setDepartment({
-      ...department,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.put(
-        `http://localhost:5000/api/departments/${id}`, // ✅ fixed: departments
-        department,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-      if (response.data.success) {
-        alert("Department updated successfully");
-        navigate("/admin-dashboard/departments");
-      }
-    } catch (error) {
-      if (error.response && !error.response.data.success) {
-        console.log(error.response.data.error);
-      }
-    }
-  };
+  const [department, setDepartment] = useState({
+    dept_name: "",
+    dept_description: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchDepartment = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:5000/api/departments/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          },
-        );
-        if (response.data.success) {
-          setDepartment(response.data.department);
+        const res = await axios.get(`${API_BASE}/api/departments/${id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        if (res.data.success) {
+          setDepartment({
+            dept_name: res.data.department.dept_name || "",
+            dept_description: res.data.department.dept_description || "",
+          });
         }
-      } catch (error) {
-        if (error.response && !error.response.data.success) {
-          console.log(error.response.data.error);
-        }
-      } finally {
-        setLoading(false);
+      } catch (err) {
+        setError("Failed to load department.");
       }
     };
     fetchDepartment();
   }, [id]);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setDepartment((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await axios.put(
+        `${API_BASE}/api/departments/${id}`,
+        department,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        },
+      );
+      if (res.data.success) navigate("/admin-dashboard/departments");
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to update department.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputCls =
+    "mt-1 p-2.5 block w-full border border-gray-300 rounded-lg text-sm " +
+    "focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40 focus:border-[#1B3668] transition-colors";
+
   return (
-    <>
-      {loading ? (
-        <div>Loading...</div>
-      ) : !department ? (
-        <div>Department not found.</div>
-      ) : (
-        <div className="max-w-3xl mx-auto mt-10 bg-white p-8 rounded-md shadow-md w-96">
-          <h2 className="text-2xl font-bold mb-6">Edit Department</h2>
-          <form onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="dept_name"
-                className="text-sm font-medium text-gray-700"
+    <div className="max-w-xl mx-auto mt-8 px-4">
+      <button
+        onClick={() => navigate("/admin-dashboard/departments")}
+        className="flex items-center gap-2 text-[#1B3668] hover:text-[#0f2040]
+                   text-sm font-medium mb-5 transition-colors"
+      >
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+        Back to Departments
+      </button>
+
+      <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+        <div className="bg-[#1B3668] px-8 py-5">
+          <h2 className="text-xl font-bold text-white">Edit Department</h2>
+          <p className="text-blue-200 text-sm mt-0.5">
+            Update department details
+          </p>
+        </div>
+
+        <div className="p-8">
+          {error && (
+            <div
+              className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200
+                            text-red-700 rounded-lg px-4 py-3 text-sm"
+            >
+              <svg
+                className="w-4 h-4 mt-0.5 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Department Name
               </label>
               <input
                 type="text"
                 name="dept_name"
-                onChange={handleChange}
                 value={department.dept_name}
-                placeholder="Enter department name"
-                className="mt-1 w-full p-2 border border-gray-300 rounded-md"
+                onChange={handleChange}
+                required
+                className={inputCls}
               />
             </div>
             <div>
-              <label
-                htmlFor="dept_description"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Description
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Description{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <textarea
                 name="dept_description"
-                onChange={handleChange}
-                placeholder="Enter department description"
-                className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
                 value={department.dept_description}
+                onChange={handleChange}
+                rows={3}
+                className={inputCls + " resize-none"}
               />
             </div>
-            <button
-              type="submit"
-              className="w-full mt-6 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Edit Department
-            </button>
+            <div className="flex gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => navigate("/admin-dashboard/departments")}
+                className="flex-1 py-2.5 border border-gray-300 text-gray-700 text-sm
+                           font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-[#1B3668] hover:bg-[#0f2040] text-white font-semibold
+                           py-2.5 rounded-lg transition-colors disabled:opacity-60 text-sm"
+              >
+                {loading ? "Saving…" : "Save Changes"}
+              </button>
+            </div>
           </form>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 };
 

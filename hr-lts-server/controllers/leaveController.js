@@ -172,7 +172,11 @@ export const updateLeaveStatus = async (req, res) => {
     leave.reviewedBy = req.user._id;
     leave.reviewedAt = new Date();
     await leave.save();
-    return res.status(200).json({ success: true, leave });
+    // Re-fetch with populated employee so frontend name stays correct
+    const populated = await LeaveRequest.findById(leave._id)
+      .populate("employee", "name email")
+      .populate("reviewedBy", "name");
+    return res.status(200).json({ success: true, leave: populated });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
