@@ -19,7 +19,7 @@ const DetailRow = ({ label, children }) => (
 );
 
 const EmployeeLeaves = () => {
-  const { id } = useParams(); // Employee _id
+  const { id } = useParams();
   const navigate = useNavigate();
   const [leaves, setLeaves] = useState([]);
   const [employee, setEmployee] = useState(null);
@@ -34,14 +34,17 @@ const EmployeeLeaves = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [empRes, leavesRes] = await Promise.all([
+        const [empRes, leavesRes] = await Promise.allSettled([
           axios.get(`${API_BASE}/api/employees/${id}`, { headers }),
           axios.get(`${API_BASE}/api/leaves/employee/${id}`, { headers }),
         ]);
-        if (empRes.data.success) setEmployee(empRes.data.employee);
-        if (leavesRes.data.success) {
-          setLeaves(leavesRes.data.leaves);
-          setBalance(leavesRes.data.balance);
+
+        if (empRes.status === "fulfilled" && empRes.value.data.success)
+          setEmployee(empRes.value.data.employee);
+
+        if (leavesRes.status === "fulfilled" && leavesRes.value.data.success) {
+          setLeaves(leavesRes.value.data.leaves);
+          setBalance(leavesRes.value.data.balance);
         }
       } catch (err) {
         console.error(err);
@@ -54,15 +57,18 @@ const EmployeeLeaves = () => {
 
   if (loading) return <p className="p-6 text-gray-500">Loading…</p>;
 
-  const empName = employee?.userId?.name || "Employee";
+  const empName =
+    employee?.userId?.name || employee?.name || "Unknown Employee";
+
+  const designation = employee?.designation || "";
+  const department = employee?.department?.dept_name || "";
 
   return (
-    <div className="p-6">
-      {/* Back button */}
+    <div className="p-6 max-w-5xl mx-auto">
       <button
         onClick={() => navigate("/admin-dashboard/employees")}
         className="flex items-center gap-2 text-[#1B3668] hover:text-[#0f2040]
-                   text-sm font-medium mb-5 transition-colors"
+                   text-sm font-medium mb-6 transition-colors"
       >
         <svg
           className="w-4 h-4"
@@ -80,26 +86,26 @@ const EmployeeLeaves = () => {
         Back to Employees
       </button>
 
-      {/* Header */}
       <div
-        className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6
-                      flex items-center gap-4"
+        className="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4 mb-6
+                      flex items-center gap-3"
       >
         <div
-          className="w-12 h-12 rounded-full bg-[#1B3668] flex items-center justify-center
-                        text-white font-bold text-lg flex-shrink-0"
+          className="w-10 h-10 rounded-full bg-[#1B3668] flex items-center justify-center
+                        text-white font-bold text-base flex-shrink-0"
         >
           {empName.charAt(0).toUpperCase()}
         </div>
         <div>
-          <h2 className="text-xl font-bold text-[#1B3668]">{empName}</h2>
-          <p className="text-sm text-gray-500">
-            {employee?.designation} · {employee?.department?.dept_name}
-          </p>
+          <h2 className="text-base font-bold text-[#1B3668]">{empName}</h2>
+          {(designation || department) && (
+            <p className="text-xs text-gray-500">
+              {[designation, department].filter(Boolean).join(" · ")}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Balance cards */}
       {balance && (
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
@@ -134,13 +140,38 @@ const EmployeeLeaves = () => {
         </div>
       )}
 
-      {/* Leave history table */}
       <h3 className="text-xl font-bold text-[#1B3668] mb-4">Leave History</h3>
 
       {leaves.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center">
-          <p className="text-gray-400">
-            No leave applications found for {empName}.
+        <div
+          className="bg-white rounded-xl shadow-sm border border-gray-100
+                        py-16 px-8 text-center"
+        >
+          <div
+            className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center
+                          mx-auto mb-4"
+          >
+            <svg
+              className="w-7 h-7 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25
+                   2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021
+                   18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+              />
+            </svg>
+          </div>
+          <p className="text-gray-500 font-medium">
+            No leave applications found
+          </p>
+          <p className="text-gray-400 text-sm mt-1">
+            {empName} has not applied for any leave yet.
           </p>
         </div>
       ) : (
@@ -196,7 +227,6 @@ const EmployeeLeaves = () => {
         </div>
       )}
 
-      {/* Detail modal */}
       {detail && (
         <div
           className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center
@@ -217,6 +247,9 @@ const EmployeeLeaves = () => {
               </button>
             </div>
             <div className="p-6 space-y-4">
+              <DetailRow label="Employee">
+                <span className="font-medium">{empName}</span>
+              </DetailRow>
               <DetailRow label="Leave Type">
                 <span className="capitalize font-medium">
                   {detail.leaveType}

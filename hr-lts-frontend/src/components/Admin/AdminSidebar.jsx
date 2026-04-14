@@ -83,7 +83,6 @@ const AdminSidebar = () => {
       {/* Footer */}
       <div className="px-5 py-4 border-t border-white/10">
         <p className="text-xs text-blue-400">University of Nottingham</p>
-        <p className="text-xs text-blue-500">UK | China | Malaysia</p>
       </div>
     </div>
   );
