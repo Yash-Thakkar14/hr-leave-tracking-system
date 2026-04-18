@@ -3,35 +3,7 @@ import axios from "axios";
 import { useAuth } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import API_BASE from "../utils/api";
-
-const CastleIcon = () => (
-  <svg
-    viewBox="0 0 80 80"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-20 h-20 text-white"
-  >
-    <rect x="6" y="6" width="10" height="14" fill="white" />
-    <rect x="20" y="6" width="10" height="14" fill="white" />
-    <rect x="34" y="6" width="10" height="14" fill="white" />
-    <rect x="48" y="6" width="10" height="14" fill="white" />
-    <rect x="62" y="6" width="10" height="14" fill="white" />
-
-    <rect x="6" y="20" width="66" height="36" fill="white" />
-
-    <rect x="28" y="38" width="22" height="18" fill="#1B3668" />
-    <ellipse cx="39" cy="38" rx="11" ry="8" fill="#1B3668" />
-
-    <rect x="12" y="26" width="10" height="10" fill="#1B3668" />
-    <rect x="56" y="26" width="10" height="10" fill="#1B3668" />
-
-    <path
-      d="M0 62 Q10 58 20 62 Q30 66 40 62 Q50 58 60 62 Q70 66 80 62 L80 74 Q70 70 60 74 Q50 78 40 74 Q30 70 20 74 Q10 78 0 74 Z"
-      fill="white"
-      opacity="0.35"
-    />
-  </svg>
-);
+import uonLogo from "../assets/images.jpg";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -50,8 +22,6 @@ const Login = () => {
         email,
         password,
       });
-
-      // Check if login is actually successful
       if (response.data.success) {
         login(response.data.user);
         localStorage.setItem("token", response.data.token);
@@ -61,7 +31,6 @@ const Login = () => {
             : "/employee-dashboard",
         );
       } else {
-        // THIS IS THE CRUCIAL FIX: Show the error from the backend
         setError(
           response.data.error || "Invalid credentials. Please try again.",
         );
@@ -75,17 +44,26 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex">
+      {/* ── Left branding panel ── */}
       <div className="hidden md:flex md:w-5/12 bg-[#1B3668] flex-col justify-between p-12 text-white">
         <div>
+          {/* Logo + University name */}
           <div className="flex items-center gap-5 mb-8">
-            <div className="bg-[#0f2040] rounded-xl p-4 shadow-lg">
-              <CastleIcon />
+            <div className="bg-[#0f2040] rounded-xl p-3 shadow-lg flex items-center justify-center w-20 h-20">
+              <img
+                src={uonLogo}
+                alt="University of Nottingham"
+                className="w-14 h-14 object-contain"
+              />
             </div>
             <div>
               <p className="text-2xl font-bold leading-tight">
                 University of
                 <br />
                 Nottingham
+              </p>
+              <p className="text-xs text-blue-300 tracking-[0.2em] mt-1">
+                UK | CHINA | MALAYSIA
               </p>
             </div>
           </div>
@@ -103,6 +81,7 @@ const Login = () => {
           </p>
         </div>
 
+        {/* Feature list */}
         <div className="space-y-2">
           {[
             "Annual, sick &amp; casual leave management",
@@ -120,12 +99,21 @@ const Login = () => {
         </div>
       </div>
 
+      {/* ── Right form panel ── */}
       <div className="w-full md:w-7/12 flex flex-col justify-center items-center bg-gray-50 px-8 py-12">
-        <div className="md:hidden mb-8 text-center">
-          <p className="text-xl font-bold text-[#1B3668]">
-            University of Nottingham
-          </p>
-          <p className="text-sm text-gray-500">HR Leave Tracking System</p>
+        {/* Mobile header */}
+        <div className="md:hidden mb-8 text-center flex flex-col items-center gap-3">
+          <img
+            src={uonLogo}
+            alt="University of Nottingham"
+            className="w-16 h-16 object-contain"
+          />
+          <div>
+            <p className="text-xl font-bold text-[#1B3668]">
+              University of Nottingham
+            </p>
+            <p className="text-sm text-gray-500">HR Leave Tracking System</p>
+          </div>
         </div>
 
         <div className="w-full max-w-md">
@@ -140,7 +128,10 @@ const Login = () => {
             </div>
 
             {error && (
-              <div className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+              <div
+                className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200
+                              text-red-700 rounded-lg px-4 py-3 text-sm"
+              >
                 <svg
                   className="w-4 h-4 mt-0.5 flex-shrink-0"
                   fill="currentColor"
@@ -148,7 +139,8 @@ const Login = () => {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012
+                       0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
                     clipRule="evenodd"
                   />
                 </svg>
