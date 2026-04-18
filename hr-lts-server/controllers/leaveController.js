@@ -207,3 +207,213 @@ export const getLeaveSummary = async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 };
+
+// ── ER12: Bradford Factor report ──────────────────────────────────────────
+// GET /api/leaves/reports/bradford
+export const getBradfordReport = async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+    const start = new Date(`${year}-01-01`);
+    const end = new Date(`${year}-12-31`);
+
+    // Get all approved leaves for the year
+    const leaves = await LeaveRequest.find({
+      status: "approved",
+      startDate: { $gte: start, $lte: end },
+    }).populate("employee", "name email");
+
+    // Group by employee userId
+    const empMap = {};
+    for (const leave of leaves) {
+      const uid = leave.employee?._id?.toString();
+      if (!uid) continue;
+      if (!empMap[uid]) {
+        empMap[uid] = {
+          name: leave.employee.name || leave.employee.email,
+          spells: 0,
+          totalDays: 0,
+        };
+      }
+      empMap[uid].spells += 1;
+      empMap[uid].totalDays += leave.totalDays;
+    }
+
+    // Get department for each user via Employee model
+    const report = [];
+    for (const [userId, stats] of Object.entries(empMap)) {
+      const empDoc = await Employee.findOne({ userId }).populate(
+        "department",
+        "dept_name",
+      );
+      const score = stats.spells * stats.spells * stats.totalDays;
+      report.push({
+        employeeId: userId,
+        name: stats.name,
+        department: empDoc?.department?.dept_name || "—",
+        spells: stats.spells,
+        totalDays: stats.totalDays,
+        score,
+      });
+    }
+
+    // Sort highest score first
+    report.sort((a, b) => b.score - a.score);
+    return res.status(200).json({ success: true, report });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ── ER13: Absence trend report ────────────────────────────────────────────
+// GET /api/leaves/reports/trends
+export const getAbsenceTrends = async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+    const start = new Date(`${year}-01-01`);
+    const end = new Date(`${year}-12-31`);
+
+    const leaves = await LeaveRequest.find({
+      status: "approved",
+      startDate: { $gte: start, $lte: end },
+    });
+
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const leaveTypes = [
+      "sick",
+      "casual",
+      "annual",
+      "unpaid",
+      "maternity",
+      "paternity",
+    ];
+
+    // Build monthly buckets
+    const monthly = months.map((month) => ({ month }));
+    leaveTypes.forEach((t) =>
+      monthly.forEach((m) => {
+        m[t] = 0;
+      }),
+    );
+
+    for (const leave of leaves) {
+      const m = new Date(leave.startDate).getMonth();
+      if (monthly[m][leave.leaveType] !== undefined) {
+        monthly[m][leave.leaveType] += leave.totalDays;
+      }
+    }
+
+    // Summary totals per type
+    const summary = {};
+    leaveTypes.forEach((t) => {
+      summary[t] = monthly.reduce((sum, m) => sum + (m[t] || 0), 0);
+    });
+    // Remove zero-total types from summary
+    Object.keys(summary).forEach((k) => {
+      if (summary[k] === 0) delete summary[k];
+    });
+
+    return res.status(200).json({ success: true, monthly, summary });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ── MR08: Absence pattern flagging ───────────────────────────────────────
+// GET /api/leaves/reports/patterns
+export const getAbsencePatterns = async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+    const start = new Date(`${year}-01-01`);
+
+    const leaves = await LeaveRequest.find({
+      status: "approved",
+      startDate: { $gte: start },
+    }).populate("employee", "name email");
+
+    // Group by employee
+    const empMap = {};
+    for (const leave of leaves) {
+      const uid = leave.employee?._id?.toString();
+      if (!uid) continue;
+      if (!empMap[uid]) {
+        empMap[uid] = {
+          name: leave.employee.name || leave.employee.email,
+          leaves: [],
+        };
+      }
+      empMap[uid].leaves.push(leave);
+    }
+
+    const flags = [];
+
+    for (const [userId, stats] of Object.entries(empMap)) {
+      const empFlags = [];
+      const details = [];
+      const leaves = stats.leaves;
+      const sickLeaves = leaves.filter((l) => l.leaveType === "sick");
+      const totalDays = leaves.reduce((s, l) => s + l.totalDays, 0);
+
+      // Flag 1: Monday/Friday sick pattern (≥2 occurrences)
+      const monFriSick = sickLeaves.filter((l) => {
+        const day = new Date(l.startDate).getDay();
+        return day === 1 || day === 5; // Monday=1, Friday=5
+      });
+      if (monFriSick.length >= 2) {
+        empFlags.push("Monday/Friday Pattern");
+        details.push(
+          `${monFriSick.length} sick leaves starting on Monday or Friday`,
+        );
+      }
+
+      // Flag 2: Frequent short absences (≥4 separate spells of 1-2 days)
+      const shortSpells = leaves.filter((l) => l.totalDays <= 2);
+      if (shortSpells.length >= 4) {
+        empFlags.push("Frequent Short Absences");
+        details.push(`${shortSpells.length} absences of 1–2 days`);
+      }
+
+      // Flag 3: High sick leave (≥6 days sick in the year)
+      const sickDays = sickLeaves.reduce((s, l) => s + l.totalDays, 0);
+      if (sickDays >= 6) {
+        empFlags.push("High Sick Leave Usage");
+        details.push(`${sickDays} sick days taken this year`);
+      }
+
+      if (empFlags.length > 0) {
+        const empDoc = await Employee.findOne({ userId }).populate(
+          "department",
+          "dept_name",
+        );
+        flags.push({
+          employeeId: empDoc?._id?.toString() || userId,
+          name: stats.name,
+          department: empDoc?.department?.dept_name || "—",
+          flags: empFlags,
+          totalAbsences: leaves.length,
+          totalDays,
+          sickCount: sickLeaves.length,
+          detail: details.join(" · "),
+        });
+      }
+    }
+
+    // Sort by number of flags descending
+    flags.sort((a, b) => b.flags.length - a.flags.length);
+    return res.status(200).json({ success: true, flags });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};

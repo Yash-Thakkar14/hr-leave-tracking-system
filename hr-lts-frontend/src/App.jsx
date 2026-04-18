@@ -7,6 +7,9 @@ import EmployeeDashboard from "./pages/EmployeeDashboard";
 import PrivateRoutes from "./utils/PrivateRoutes";
 import RoleBaseRoutes from "./utils/RoleBaseRoutes";
 import AdminSummary from "./components/Admin/AdminSummary";
+import BradfordReport from "./components/Admin/BradfordReport";
+import AbsenceTrends from "./components/Admin/AbscenceTrends";
+import PatternFlags from "./components/Admin/PatternFlags";
 import DepartmentList from "./components/Department/DepartmentList";
 import AddDepartment from "./components/Department/AddDepartment";
 import EditDepartment from "./components/Department/EditDepartment";
@@ -26,7 +29,6 @@ function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Admin routes */}
         <Route
           path="/admin-dashboard"
           element={
@@ -47,9 +49,11 @@ function App() {
           <Route path="employees/edit/:id" element={<EditEmployee />} />
           <Route path="employees/:id/leaves" element={<EmployeeLeaves />} />
           <Route path="leaves" element={<LeaveList />} />
+          <Route path="reports/bradford" element={<BradfordReport />} />
+          <Route path="reports/trends" element={<AbsenceTrends />} />
+          <Route path="reports/patterns" element={<PatternFlags />} />
         </Route>
 
-        {/* Employee routes */}
         <Route
           path="/employee-dashboard"
           element={

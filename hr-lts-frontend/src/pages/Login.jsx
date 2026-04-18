@@ -50,6 +50,8 @@ const Login = () => {
         email,
         password,
       });
+
+      // Check if login is actually successful
       if (response.data.success) {
         login(response.data.user);
         localStorage.setItem("token", response.data.token);
@@ -57,6 +59,11 @@ const Login = () => {
           response.data.user.role === "admin"
             ? "/admin-dashboard"
             : "/employee-dashboard",
+        );
+      } else {
+        // THIS IS THE CRUCIAL FIX: Show the error from the backend
+        setError(
+          response.data.error || "Invalid credentials. Please try again.",
         );
       }
     } catch (err) {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
@@ -13,10 +13,20 @@ const leaveTypes = [
   { value: "unpaid", label: "Unpaid Leave" },
 ];
 
+const calcWorkingDays = (start, end) => {
+  let count = 0;
+  const cur = new Date(start);
+  while (cur <= new Date(end)) {
+    const d = cur.getDay();
+    if (d !== 0 && d !== 6) count++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return count;
+};
+
 const AddLeave = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-
   const [form, setForm] = useState({
     leaveType: "",
     startDate: "",
@@ -25,6 +35,65 @@ const AddLeave = () => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [balance, setBalance] = useState(null);
+  const [warnings, setWarnings] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(`${API_BASE}/api/leaves/my-balance`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then((r) => {
+        if (r.data.success) setBalance(r.data.balance);
+      })
+      .catch(() => {});
+  }, []);
+
+  // ── ER09: Recompute warnings on type / date change ──────────────────────
+  useEffect(() => {
+    const w = [];
+    if (!form.leaveType || !balance) {
+      setWarnings([]);
+      return;
+    }
+
+    const capped = ["sick", "casual", "annual"];
+    if (capped.includes(form.leaveType)) {
+      const pool = balance[form.leaveType];
+      const remaining = pool.total - pool.used;
+
+      if (remaining === 0) {
+        w.push({
+          level: "red",
+          msg: `You have no ${form.leaveType} leave remaining for this year.`,
+        });
+      } else if (remaining <= 3) {
+        w.push({
+          level: "yellow",
+          msg: `Only ${remaining} ${form.leaveType} day(s) remaining — plan carefully.`,
+        });
+      }
+
+      if (form.startDate && form.endDate) {
+        const days = calcWorkingDays(form.startDate, form.endDate);
+        if (days > remaining) {
+          w.push({
+            level: "red",
+            msg: `You are requesting ${days} day(s) but only have ${remaining} remaining.`,
+          });
+        }
+      }
+    }
+
+    if (form.leaveType === "sick" && balance.sick.used >= 3) {
+      w.push({
+        level: "yellow",
+        msg: `You have taken ${balance.sick.used} sick day(s) this year. Frequent sick leave may be reviewed by HR.`,
+      });
+    }
+
+    setWarnings(w);
+  }, [form.leaveType, form.startDate, form.endDate, balance]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -34,29 +103,24 @@ const AddLeave = () => {
     setError("");
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE}/api/leaves/apply`, form, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const res = await axios.post(`${API_BASE}/api/leaves/apply`, form, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      if (response.data.success) {
-        navigate("/employee-dashboard/my-leaves");
-      }
+      if (res.data.success) navigate("/employee-dashboard/my-leaves");
     } catch (err) {
-      setError(
-        err.response?.data?.error || "Something went wrong. Please try again.",
-      );
+      setError(err.response?.data?.error || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
   const today = new Date().toISOString().split("T")[0];
+  const inputCls =
+    "w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40 focus:border-[#1B3668] transition-colors";
 
   return (
     <div className="max-w-2xl mx-auto mt-10 px-4">
       <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-        {/* Header */}
         <div className="bg-[#1B3668] px-8 py-5">
           <h2 className="text-xl font-bold text-white">Apply for Leave</h2>
           <p className="text-blue-200 text-sm mt-0.5">
@@ -65,10 +129,8 @@ const AddLeave = () => {
         </div>
 
         <div className="p-8">
-          <div
-            className="flex items-center gap-2 bg-blue-50 border border-blue-100
-                          rounded-lg px-4 py-2.5 mb-6"
-          >
+          {/* Employee banner */}
+          <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2.5 mb-5">
             <svg
               className="w-4 h-4 text-[#1B3668]"
               fill="currentColor"
@@ -81,21 +143,38 @@ const AddLeave = () => {
               />
             </svg>
             <span className="text-sm text-[#1B3668]">
-              Applying as:{" "}
-              <strong>
-                {user?.name ?? (
-                  <span className="text-gray-400 font-normal">Loading…</span>
-                )}
-              </strong>
+              Applying as: <strong>{user?.name ?? "Loading…"}</strong>
             </span>
           </div>
 
+          {/* ── ER09 Warning banners ── */}
+          {warnings.map((w, i) => (
+            <div
+              key={i}
+              className={`mb-3 flex items-start gap-2 rounded-lg px-4 py-3 text-sm border ${
+                w.level === "red"
+                  ? "bg-red-50 border-red-200 text-red-700"
+                  : "bg-yellow-50 border-yellow-200 text-yellow-800"
+              }`}
+            >
+              <svg
+                className="w-4 h-4 mt-0.5 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {w.msg}
+            </div>
+          ))}
+
           {/* Error */}
           {error && (
-            <div
-              className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200
-                            text-red-700 rounded-lg px-4 py-3 text-sm"
-            >
+            <div className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
               <svg
                 className="w-4 h-4 mt-0.5 flex-shrink-0"
                 fill="currentColor"
@@ -112,7 +191,6 @@ const AddLeave = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Leave type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Leave Type
@@ -122,9 +200,7 @@ const AddLeave = () => {
                 onChange={handleChange}
                 value={form.leaveType}
                 required
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm
-                           focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40
-                           focus:border-[#1B3668] transition-colors"
+                className={inputCls}
               >
                 <option value="">Select Leave Type</option>
                 {leaveTypes.map((t) => (
@@ -135,7 +211,6 @@ const AddLeave = () => {
               </select>
             </div>
 
-            {/* Dates */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -148,9 +223,7 @@ const AddLeave = () => {
                   value={form.startDate}
                   min={today}
                   required
-                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm
-                             focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40
-                             focus:border-[#1B3668] transition-colors"
+                  className={inputCls}
                 />
               </div>
               <div>
@@ -164,14 +237,11 @@ const AddLeave = () => {
                   value={form.endDate}
                   min={form.startDate || today}
                   required
-                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm
-                             focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40
-                             focus:border-[#1B3668] transition-colors"
+                  className={inputCls}
                 />
               </div>
             </div>
 
-            {/* Reason */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Reason
@@ -183,18 +253,14 @@ const AddLeave = () => {
                 required
                 rows={4}
                 placeholder="Briefly describe the reason for your leave…"
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm
-                           focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40
-                           focus:border-[#1B3668] transition-colors resize-none"
+                className={inputCls + " resize-none"}
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#1B3668] hover:bg-[#0f2040] text-white font-semibold
-                         py-2.5 px-4 rounded-lg transition-colors disabled:opacity-60
-                         disabled:cursor-not-allowed text-sm shadow-sm"
+              className="w-full bg-[#1B3668] hover:bg-[#0f2040] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors disabled:opacity-60 text-sm"
             >
               {loading ? "Submitting…" : "Submit Application"}
             </button>

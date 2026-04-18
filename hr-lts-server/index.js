@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import connectDB from "./db/db.js";
@@ -10,6 +11,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://127.0.0.1:5173", // Added this so Vite's IPv4 local address is accepted
   "https://hr-leave-tracking-system.vercel.app",
   /https:\/\/hr-leave-tracking-system.*\.vercel\.app$/,
 ];
@@ -22,7 +24,10 @@ app.use(
         o instanceof RegExp ? o.test(origin) : o === origin,
       );
       if (allowed) return callback(null, true);
-      callback(new Error(`CORS blocked: ${origin}`));
+
+      // FIXED: Return false instead of throwing a new Error.
+      // Throwing an error crashes the server response and causes the frontend to hang.
+      callback(null, false);
     },
     credentials: true,
   }),
