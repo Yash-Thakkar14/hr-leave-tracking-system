@@ -1,7 +1,6 @@
 import React from "react";
-import axios from "axios";
+import axiosInstance from "./axiosInstance";
 import { useNavigate } from "react-router-dom";
-import API_BASE from "./api";
 
 export const columns = [
   { name: "S No", selector: (row) => row.sno, width: "80px" },
@@ -16,9 +15,7 @@ export const DepartmentButtons = ({ _id, onDepartmentDelete }) => {
     if (!window.confirm("Delete this department? This cannot be undone."))
       return;
     try {
-      const res = await axios.delete(`${API_BASE}/api/departments/${_id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await axiosInstance.delete(`/api/departments/${_id}`);
       if (res.data.success) onDepartmentDelete(_id);
     } catch (err) {
       alert(err.response?.data?.error || "Failed to delete department.");

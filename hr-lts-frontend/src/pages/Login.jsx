@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import { useAuth } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
-import API_BASE from "../utils/api";
 import uonLogo from "../assets/images.jpg";
 
 const Login = () => {
@@ -18,11 +17,10 @@ const Login = () => {
     setError("");
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_BASE}/api/auth/login`,
-        { email, password },
-        { withCredentials: true },
-      );
+      const response = await axiosInstance.post("/api/auth/login", {
+        email,
+        password,
+      });
       if (response.data.success) {
         login(response.data.user, response.data.accessToken);
         if (response.data.user.role === "admin") {

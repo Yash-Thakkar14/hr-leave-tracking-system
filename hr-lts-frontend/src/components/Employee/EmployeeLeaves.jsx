@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -27,16 +26,12 @@ const EmployeeLeaves = () => {
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
 
-  const headers = {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  };
-
   useEffect(() => {
     const fetchAll = async () => {
       try {
         const [empRes, leavesRes] = await Promise.allSettled([
-          axios.get(`${API_BASE}/api/employees/${id}`, { headers }),
-          axios.get(`${API_BASE}/api/leaves/employee/${id}`, { headers }),
+          axiosInstance.get(`/api/employees/${id}`),
+          axiosInstance.get(`/api/leaves/employee/${id}`),
         ]);
 
         if (empRes.status === "fulfilled" && empRes.value.data.success)

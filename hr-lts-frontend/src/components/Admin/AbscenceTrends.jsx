@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import {
   BarChart,
   Bar,
@@ -10,7 +10,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import API_BASE from "../../utils/api";
 
 const COLORS = {
   sick: "#ef4444",
@@ -27,10 +26,8 @@ const AbsenceTrends = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get(`${API_BASE}/api/leaves/reports/trends`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
+    axiosInstance
+      .get("/api/leaves/reports/trends")
       .then((r) => {
         if (r.data.success) {
           setData(r.data.monthly);

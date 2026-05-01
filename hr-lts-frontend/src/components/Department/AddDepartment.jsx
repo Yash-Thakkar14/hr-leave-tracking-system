@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import API_BASE from "../../utils/api";
 
 const AddDepartment = () => {
   const [department, setDepartment] = useState({
@@ -23,14 +22,9 @@ const AddDepartment = () => {
     setError("");
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_BASE}/api/departments/add`,
+      const response = await axiosInstance.post(
+        "/api/departments/add",
         department,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
       );
       if (response.data.success) {
         navigate("/admin-dashboard/departments");

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 const Field = ({ label, value }) => (
   <div className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
@@ -20,11 +19,7 @@ const ViewEmployee = () => {
   useEffect(() => {
     const fetchEmployee = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/api/employees/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await axiosInstance.get(`/api/employees/${id}`);
         if (response.data.success) setEmployee(response.data.employee);
       } catch (error) {
         console.error(error);

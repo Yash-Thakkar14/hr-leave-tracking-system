@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { fetchDepartments } from "../../utils/EmployeeHelper";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import API_BASE from "../../utils/api";
 
 const AddEmployee = () => {
   const [departments, setDepartments] = useState([]);
@@ -38,14 +37,9 @@ const AddEmployee = () => {
     setError("");
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_BASE}/api/employees/add`,
+      const response = await axiosInstance.post(
+        "/api/employees/add",
         formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
       );
       if (response.data.success) {
         navigate("/admin-dashboard/employees");

@@ -53,12 +53,10 @@ const LeaveList = () => {
   const [modal, setModal] = useState(null);
   const [comment, setComment] = useState("");
 
-  const headers = { Authorization: `Bearer ${localStorage.getItem("token")}` };
-
   const fetchLeaves = async () => {
     setRefreshing(true);
     try {
-      const res = await axiosInstance.get("/api/leaves", { headers });
+      const res = await axiosInstance.get("/api/leaves");
       if (res.data.success) setLeaves(res.data.leaves);
     } catch (err) {
       console.error(err);
@@ -77,7 +75,6 @@ const LeaveList = () => {
       const res = await axiosInstance.put(
         `/api/leaves/${modal.leaveId}/status`,
         { status: modal.action, adminComment: comment },
-        { headers },
       );
       if (res.data.success) {
         setLeaves((prev) =>

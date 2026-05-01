@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import API_BASE from "../../utils/api";
 
 const flagColors = {
   "Monday/Friday Pattern": "bg-red-100 text-red-700 border border-red-200",
@@ -17,10 +16,8 @@ const PatternFlags = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(`${API_BASE}/api/leaves/reports/patterns`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
+    axiosInstance
+      .get("/api/leaves/reports/patterns")
       .then((r) => {
         if (r.data.success) setData(r.data.flags);
       })

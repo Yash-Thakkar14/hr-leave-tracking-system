@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 // Bradford Factor = S² × D
 // S = number of separate absence spells, D = total days absent
@@ -28,10 +27,8 @@ const BradfordReport = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get(`${API_BASE}/api/leaves/reports/bradford`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
+    axiosInstance
+      .get("/api/leaves/reports/bradford")
       .then((r) => {
         if (r.data.success) setData(r.data.report);
       })

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import { fetchDepartments } from "../../utils/EmployeeHelper";
-import API_BASE from "../../utils/api";
 
 const EditEmployee = () => {
   const [employee, setEmployee] = useState({
@@ -23,9 +22,7 @@ const EditEmployee = () => {
   useEffect(() => {
     const fetchEmployee = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/employees/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const res = await axiosInstance.get(`/api/employees/${id}`);
         if (res.data.success) {
           const e = res.data.employee;
           setEmployee({
@@ -51,9 +48,7 @@ const EditEmployee = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await axios.put(`${API_BASE}/api/employees/${id}`, employee, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await axiosInstance.put(`/api/employees/${id}`, employee);
       if (res.data.success) navigate("/admin-dashboard/employees");
     } catch (err) {
       setError(err.response?.data?.error || "Failed to update employee.");

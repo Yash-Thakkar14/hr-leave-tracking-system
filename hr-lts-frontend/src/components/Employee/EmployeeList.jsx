@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import { columns, EmployeeButtons } from "../../utils/EmployeeHelper";
-import axios from "axios";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
@@ -13,9 +12,7 @@ const EmployeeList = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/employees`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const res = await axiosInstance.get("/api/employees");
         if (res.data.success) {
           let sno = 1;
           const data = res.data.employees.map((emp) => ({

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 const EditDepartment = () => {
   const { id } = useParams();
@@ -16,9 +15,7 @@ const EditDepartment = () => {
   useEffect(() => {
     const fetchDepartment = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/departments/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const res = await axiosInstance.get(`/api/departments/${id}`);
         if (res.data.success) {
           setDepartment({
             dept_name: res.data.department.dept_name || "",
@@ -42,13 +39,7 @@ const EditDepartment = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await axios.put(
-        `${API_BASE}/api/departments/${id}`,
-        department,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        },
-      );
+      const res = await axiosInstance.put(`/api/departments/${id}`, department);
       if (res.data.success) navigate("/admin-dashboard/departments");
     } catch (err) {
       setError(err.response?.data?.error || "Failed to update department.");

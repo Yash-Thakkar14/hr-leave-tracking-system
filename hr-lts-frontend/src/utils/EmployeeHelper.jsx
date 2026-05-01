@@ -1,6 +1,5 @@
-import axios from "axios";
+import axiosInstance from "./axiosInstance";
 import { useNavigate } from "react-router-dom";
-import API_BASE from "./api";
 
 export const columns = [
   { name: "S No", selector: (row) => row.sno, width: "80px" },
@@ -11,9 +10,7 @@ export const columns = [
 
 export const fetchDepartments = async () => {
   try {
-    const response = await axios.get(`${API_BASE}/api/departments`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
+    const response = await axiosInstance.get("/api/departments");
     if (response.data.success) return response.data.departments;
     return [];
   } catch (error) {
