@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -59,7 +58,7 @@ const LeaveList = () => {
   const fetchLeaves = async () => {
     setRefreshing(true);
     try {
-      const res = await axios.get(`${API_BASE}/api/leaves`, { headers });
+      const res = await axiosInstance.get("/api/leaves", { headers });
       if (res.data.success) setLeaves(res.data.leaves);
     } catch (err) {
       console.error(err);
@@ -75,8 +74,8 @@ const LeaveList = () => {
 
   const handleStatusUpdate = async () => {
     try {
-      const res = await axios.put(
-        `${API_BASE}/api/leaves/${modal.leaveId}/status`,
+      const res = await axiosInstance.put(
+        `/api/leaves/${modal.leaveId}/status`,
         { status: modal.action, adminComment: comment },
         { headers },
       );

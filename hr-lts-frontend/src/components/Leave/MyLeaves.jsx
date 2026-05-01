@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -27,12 +26,9 @@ const MyLeaves = () => {
   const fetchData = async () => {
     setRefreshing(true);
     try {
-      const headers = {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      };
       const [leavesRes, balanceRes] = await Promise.all([
-        axios.get(`${API_BASE}/api/leaves/my-leaves`, { headers }),
-        axios.get(`${API_BASE}/api/leaves/my-balance`, { headers }),
+        axiosInstance.get("/api/leaves/my-leaves"),
+        axiosInstance.get("/api/leaves/my-balance"),
       ]);
       if (leavesRes.data.success) setLeaves(leavesRes.data.leaves);
       if (balanceRes.data.success) setBalance(balanceRes.data.balance);
@@ -61,13 +57,11 @@ const MyLeaves = () => {
             <button
               onClick={fetchData}
               disabled={refreshing}
-              className="px-3 py-1.5 text-sm bg-[#1B3668] text-white rounded-lg
-                         hover:bg-[#0f2040] disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 text-sm bg-[#1B3668] text-white rounded-lg hover:bg-[#0f2040] disabled:opacity-50 transition-colors"
             >
               {refreshing ? "Refreshing…" : "↻ Refresh"}
             </button>
           </div>
-
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {["sick", "casual", "annual", "unpaid"].map((type) => {
               const remaining =
@@ -88,7 +82,6 @@ const MyLeaves = () => {
                   : pct > 30
                     ? "bg-yellow-400"
                     : "bg-red-400";
-
               return (
                 <div
                   key={type}
@@ -119,6 +112,7 @@ const MyLeaves = () => {
           </div>
         </div>
       )}
+
       <h3 className="text-xl font-bold text-[#1B3668] mb-4">
         My Leave History
       </h3>
@@ -179,8 +173,7 @@ const MyLeaves = () => {
 
       {detailLeave && (
         <div
-          className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center
-                     justify-center z-50 px-4"
+          className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 px-4"
           onClick={() => setDetailLeave(null)}
         >
           <div
@@ -196,7 +189,6 @@ const MyLeaves = () => {
                 &times;
               </button>
             </div>
-
             <div className="p-6 space-y-4">
               <DetailRow label="Leave Type">
                 <span className="capitalize font-medium">
@@ -229,26 +221,18 @@ const MyLeaves = () => {
                   {detailLeave.status}
                 </span>
               </DetailRow>
-
               <div>
                 <p className="text-gray-500 text-sm font-medium mb-1">Reason</p>
-                <p
-                  className="text-gray-800 text-sm bg-gray-50 border border-gray-100
-                              rounded-lg p-3 leading-relaxed"
-                >
+                <p className="text-gray-800 text-sm bg-gray-50 border border-gray-100 rounded-lg p-3 leading-relaxed">
                   {detailLeave.reason || "—"}
                 </p>
               </div>
-
               {detailLeave.adminComment ? (
                 <div>
                   <p className="text-gray-500 text-sm font-medium mb-1">
                     Admin Comment
                   </p>
-                  <p
-                    className="text-gray-800 text-sm bg-blue-50 border border-blue-100
-                                rounded-lg p-3 leading-relaxed"
-                  >
+                  <p className="text-gray-800 text-sm bg-blue-50 border border-blue-100 rounded-lg p-3 leading-relaxed">
                     {detailLeave.adminComment}
                   </p>
                 </div>
@@ -260,12 +244,10 @@ const MyLeaves = () => {
                 )
               )}
             </div>
-
             <div className="px-6 pb-6">
               <button
                 onClick={() => setDetailLeave(null)}
-                className="w-full py-2.5 bg-[#1B3668] hover:bg-[#0f2040] text-white
-                           rounded-lg text-sm font-semibold transition-colors"
+                className="w-full py-2.5 bg-[#1B3668] hover:bg-[#0f2040] text-white rounded-lg text-sm font-semibold transition-colors"
               >
                 Close
               </button>

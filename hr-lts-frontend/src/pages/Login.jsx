@@ -18,25 +18,21 @@ const Login = () => {
     setError("");
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE}/api/auth/login`, {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${API_BASE}/api/auth/login`,
+        { email, password },
+        { withCredentials: true },
+      );
       if (response.data.success) {
-        login(response.data.user);
-        localStorage.setItem("token", response.data.token);
-        navigate(
-          response.data.user.role === "admin"
-            ? "/admin-dashboard"
-            : "/employee-dashboard",
-        );
-      } else {
-        setError(
-          response.data.error || "Invalid credentials. Please try again.",
-        );
+        login(response.data.user, response.data.accessToken);
+        if (response.data.user.role === "admin") {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/employee-dashboard");
+        }
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Server error. Please try again.");
+      setError(err.response?.data?.error || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -44,10 +40,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* ── Left branding panel ── */}
+      {/* Left branding panel */}
       <div className="hidden md:flex md:w-5/12 bg-[#1B3668] flex-col justify-between p-12 text-white">
         <div>
-          {/* Logo + University name */}
           <div className="flex items-center gap-5 mb-8">
             <div className="bg-[#0f2040] rounded-xl p-3 shadow-lg flex items-center justify-center w-20 h-20">
               <img
@@ -67,9 +62,7 @@ const Login = () => {
               </p>
             </div>
           </div>
-
           <div className="border-t border-blue-500/40 my-8" />
-
           <h2 className="text-3xl font-bold leading-snug mb-3">
             HR Leave &amp;
             <br />
@@ -80,8 +73,6 @@ const Login = () => {
             records — all in one place.
           </p>
         </div>
-
-        {/* Feature list */}
         <div className="space-y-2">
           {[
             "Annual, sick &amp; casual leave management",
@@ -99,9 +90,8 @@ const Login = () => {
         </div>
       </div>
 
-      {/* ── Right form panel ── */}
+      {/* Right form panel */}
       <div className="w-full md:w-7/12 flex flex-col justify-center items-center bg-gray-50 px-8 py-12">
-        {/* Mobile header */}
         <div className="md:hidden mb-8 text-center flex flex-col items-center gap-3">
           <img
             src={uonLogo}
@@ -128,10 +118,7 @@ const Login = () => {
             </div>
 
             {error && (
-              <div
-                className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200
-                              text-red-700 rounded-lg px-4 py-3 text-sm"
-              >
+              <div className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
                 <svg
                   className="w-4 h-4 mt-0.5 flex-shrink-0"
                   fill="currentColor"
@@ -139,8 +126,7 @@ const Login = () => {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012
-                       0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
                     clipRule="evenodd"
                   />
                 </svg>
@@ -159,12 +145,9 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="name@nottingham.ac.uk"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm
-                             focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40
-                             focus:border-[#1B3668] transition-colors"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40 focus:border-[#1B3668] transition-colors"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Password
@@ -175,18 +158,13 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm
-                             focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40
-                             focus:border-[#1B3668] transition-colors"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40 focus:border-[#1B3668] transition-colors"
                 />
               </div>
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#1B3668] hover:bg-[#0f2040] text-white font-semibold
-                           py-2.5 px-4 rounded-lg transition-colors disabled:opacity-60
-                           disabled:cursor-not-allowed text-sm mt-2 shadow-sm"
+                className="w-full bg-[#1B3668] hover:bg-[#0f2040] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm mt-2 shadow-sm"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -217,7 +195,6 @@ const Login = () => {
               </button>
             </form>
           </div>
-
           <p className="text-center text-xs text-gray-400 mt-6">
             University of Nottingham — HR Systems · {new Date().getFullYear()}
           </p>

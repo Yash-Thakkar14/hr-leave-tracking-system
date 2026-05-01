@@ -7,8 +7,7 @@ import {
   FaTimesCircle,
   FaUsers,
 } from "react-icons/fa";
-import axios from "axios";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 const StatCard = ({ icon, title, value, iconBg }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
@@ -30,11 +29,7 @@ const AdminSummary = () => {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/leaves/summary`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const res = await axiosInstance.get("/api/leaves/summary");
         if (res.data.success) setSummary(res.data.summary);
       } catch (err) {
         console.error(err);
@@ -50,8 +45,6 @@ const AdminSummary = () => {
       <h3 className="text-2xl font-bold text-[#1B3668] mb-6">
         Dashboard Overview
       </h3>
-
-      {/* Organisation stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <StatCard
           icon={<FaUsers />}
@@ -66,8 +59,6 @@ const AdminSummary = () => {
           iconBg="bg-yellow-600"
         />
       </div>
-
-      {/* Leave stats */}
       <h4 className="text-lg font-bold text-[#1B3668] mb-4">Leave Summary</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatCard

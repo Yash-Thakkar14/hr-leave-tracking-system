@@ -1,43 +1,79 @@
-import React, { useState, createContext, useContext, useEffect } from "react";
+import React, {
+  useState,
+  createContext,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 import axios from "axios";
 import API_BASE from "../utils/api";
+import { setAuthToken, registerAuthCallbacks } from "../utils/axiosInstance";
 
 const userContext = createContext();
 
 const AuthContext = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const login = (user) => setUser(user);
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("token");
+  const login = (userData, token) => {
+    setUser(userData);
+    setAccessToken(token);
+    setAuthToken(token);
   };
 
-  useEffect(() => {
-    const verifyUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          const response = await axios.get(`${API_BASE}/api/auth/verify`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (response.data.success) setUser(response.data.user);
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
+  const refreshAccessToken = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/auth/refresh`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setUser(res.data.user);
+        setAccessToken(res.data.accessToken);
+        setAuthToken(res.data.accessToken);
+        return res.data.accessToken;
       }
-    };
-    verifyUser();
+    } catch {
+      setUser(null);
+      setAccessToken(null);
+      setAuthToken(null);
+    }
+    return null;
   }, []);
 
+  const logout = useCallback(async () => {
+    try {
+      await axios.post(
+        `${API_BASE}/api/auth/logout`,
+        {},
+        { withCredentials: true },
+      );
+    } catch {
+      /* ignore */
+    }
+    setUser(null);
+    setAccessToken(null);
+    setAuthToken(null);
+  }, []);
+
+  // Register callbacks with axiosInstance once
+  useEffect(() => {
+    registerAuthCallbacks(refreshAccessToken, logout);
+  }, [refreshAccessToken, logout]);
+
+  // Restore session on app load
+  useEffect(() => {
+    const restoreSession = async () => {
+      await refreshAccessToken();
+      setLoading(false);
+    };
+    restoreSession();
+  }, [refreshAccessToken]);
+
   return (
-    <userContext.Provider value={{ user, login, logout, loading }}>
+    <userContext.Provider
+      value={{ user, accessToken, login, logout, loading, refreshAccessToken }}
+    >
       {children}
     </userContext.Provider>
   );

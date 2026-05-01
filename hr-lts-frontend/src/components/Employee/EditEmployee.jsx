@@ -68,7 +68,6 @@ const EditEmployee = () => {
 
   return (
     <div className="max-w-2xl mx-auto mt-8 px-4">
-      {/* Back button */}
       <button
         onClick={() => navigate("/admin-dashboard/employees")}
         className="flex items-center gap-2 text-[#1B3668] hover:text-[#0f2040]
@@ -91,7 +90,6 @@ const EditEmployee = () => {
       </button>
 
       <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-        {/* Header */}
         <div className="bg-[#1B3668] px-8 py-5">
           <h2 className="text-xl font-bold text-white">Edit Employee</h2>
           <p className="text-blue-200 text-sm mt-0.5">

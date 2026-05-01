@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import connectDB from "./db/db.js";
 import authRouter from "./routes/auth.js";
 import departmentRouter from "./routes/department.js";
@@ -11,7 +12,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://127.0.0.1:5173", // Added this so Vite's IPv4 local address is accepted
+  "http://127.0.0.1:5173",
   "https://hr-leave-tracking-system.vercel.app",
   /https:\/\/hr-leave-tracking-system.*\.vercel\.app$/,
 ];
@@ -23,17 +24,14 @@ app.use(
       const allowed = allowedOrigins.some((o) =>
         o instanceof RegExp ? o.test(origin) : o === origin,
       );
-      if (allowed) return callback(null, true);
-
-      // FIXED: Return false instead of throwing a new Error.
-      // Throwing an error crashes the server response and causes the frontend to hang.
-      callback(null, false);
+      callback(null, allowed);
     },
     credentials: true,
   }),
 );
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/departments", departmentRouter);

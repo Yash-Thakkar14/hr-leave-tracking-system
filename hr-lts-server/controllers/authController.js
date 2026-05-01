@@ -1,29 +1,94 @@
-import User from "../models/User.js"
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
+import User from "../models/User.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import path from "path";
 
-const login = async(req,res) =>{
-    try{
-        const {email, password} = req.body
-        const user = await User.findOne({email})
-        if(!user){
-            return res.status(404).json({success: false,error:"User not found"})
-        }
-        const isMatch = await bcrypt.compare(password, user.password)
-        if(!isMatch){
-            return res.status(401).json({success: false,error:"Password is incorrect"})
-        }
-        // Implement login logic here
-        const token = jwt.sign({userId: user._id, role: user.role}, process.env.JWT_SECRET, {expiresIn: '10d'})
-        res.status(200).json({success: true, token: token, user: {userId: user._id, name: user.name, role: user.role}})
-    }
-    catch(error){
-        res.status(500).json({success: false, error:error.message})
-    }
+const generateAccessToken = (user) =>
+  jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: "15m",
+  });
+
+const generateRefreshToken = (user) =>
+  jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: "7d",
+  });
+
+// POST /api/auth/login
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ success: false, error: "User not found" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res
+        .status(401)
+        .json({ success: false, error: "Password is incorrect" });
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    return res.status(200).json({
+      success: true,
+      accessToken,
+      user: { userId: user._id, name: user.name, role: user.role },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
 };
 
-const verify = (req,res) =>{
-    return res.status(200).json({success: true, user: req.user})
-}
+// GET /api/auth/refresh
+const refresh = async (req, res) => {
+  try {
+    const token = req.cookies?.refreshToken;
+    if (!token)
+      return res
+        .status(401)
+        .json({ success: false, error: "No refresh token" });
 
-export {login, verify}
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user)
+      return res.status(404).json({ success: false, error: "User not found" });
+
+    const accessToken = generateAccessToken(user);
+    return res.status(200).json({
+      success: true,
+      accessToken,
+      user: { userId: user._id, name: user.name, role: user.role },
+    });
+  } catch (error) {
+    return res
+      .status(401)
+      .json({ success: false, error: "Invalid or expired refresh token" });
+  }
+};
+
+// POST /api/auth/logout
+const logout = (req, res) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
+  });
+  return res.status(200).json({ success: true, message: "Logged out" });
+};
+
+// GET /api/auth/verify
+const verify = (req, res) => {
+  return res.status(200).json({ success: true, user: req.user });
+};
+
+export { login, refresh, logout, verify };

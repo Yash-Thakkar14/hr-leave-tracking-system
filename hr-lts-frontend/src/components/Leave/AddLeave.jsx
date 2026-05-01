@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
-import API_BASE from "../../utils/api";
+import axiosInstance from "../../utils/axiosInstance";
 
 const leaveTypes = [
   { value: "sick", label: "Sick Leave" },
@@ -39,29 +38,24 @@ const AddLeave = () => {
   const [warnings, setWarnings] = useState([]);
 
   useEffect(() => {
-    axios
-      .get(`${API_BASE}/api/leaves/my-balance`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
+    axiosInstance
+      .get("/api/leaves/my-balance")
       .then((r) => {
         if (r.data.success) setBalance(r.data.balance);
       })
       .catch(() => {});
   }, []);
 
-  // ── ER09: Recompute warnings on type / date change ──────────────────────
   useEffect(() => {
     const w = [];
     if (!form.leaveType || !balance) {
       setWarnings([]);
       return;
     }
-
     const capped = ["sick", "casual", "annual"];
     if (capped.includes(form.leaveType)) {
       const pool = balance[form.leaveType];
       const remaining = pool.total - pool.used;
-
       if (remaining === 0) {
         w.push({
           level: "red",
@@ -73,7 +67,6 @@ const AddLeave = () => {
           msg: `Only ${remaining} ${form.leaveType} day(s) remaining — plan carefully.`,
         });
       }
-
       if (form.startDate && form.endDate) {
         const days = calcWorkingDays(form.startDate, form.endDate);
         if (days > remaining) {
@@ -84,14 +77,12 @@ const AddLeave = () => {
         }
       }
     }
-
     if (form.leaveType === "sick" && balance.sick.used >= 3) {
       w.push({
         level: "yellow",
         msg: `You have taken ${balance.sick.used} sick day(s) this year. Frequent sick leave may be reviewed by HR.`,
       });
     }
-
     setWarnings(w);
   }, [form.leaveType, form.startDate, form.endDate, balance]);
 
@@ -103,9 +94,7 @@ const AddLeave = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE}/api/leaves/apply`, form, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await axiosInstance.post("/api/leaves/apply", form);
       if (res.data.success) navigate("/employee-dashboard/my-leaves");
     } catch (err) {
       setError(err.response?.data?.error || "Something went wrong.");
@@ -127,9 +116,7 @@ const AddLeave = () => {
             Submit a leave request for admin review
           </p>
         </div>
-
         <div className="p-8">
-          {/* Employee banner */}
           <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2.5 mb-5">
             <svg
               className="w-4 h-4 text-[#1B3668]"
@@ -147,15 +134,10 @@ const AddLeave = () => {
             </span>
           </div>
 
-          {/* ── ER09 Warning banners ── */}
           {warnings.map((w, i) => (
             <div
               key={i}
-              className={`mb-3 flex items-start gap-2 rounded-lg px-4 py-3 text-sm border ${
-                w.level === "red"
-                  ? "bg-red-50 border-red-200 text-red-700"
-                  : "bg-yellow-50 border-yellow-200 text-yellow-800"
-              }`}
+              className={`mb-3 flex items-start gap-2 rounded-lg px-4 py-3 text-sm border ${w.level === "red" ? "bg-red-50 border-red-200 text-red-700" : "bg-yellow-50 border-yellow-200 text-yellow-800"}`}
             >
               <svg
                 className="w-4 h-4 mt-0.5 flex-shrink-0"
@@ -172,7 +154,6 @@ const AddLeave = () => {
             </div>
           ))}
 
-          {/* Error */}
           {error && (
             <div className="mb-5 flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
               <svg
@@ -210,7 +191,6 @@ const AddLeave = () => {
                 ))}
               </select>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -241,7 +221,6 @@ const AddLeave = () => {
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Reason
@@ -256,7 +235,6 @@ const AddLeave = () => {
                 className={inputCls + " resize-none"}
               />
             </div>
-
             <button
               type="submit"
               disabled={loading}
