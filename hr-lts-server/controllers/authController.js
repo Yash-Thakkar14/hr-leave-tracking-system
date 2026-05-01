@@ -1,7 +1,6 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import path from "path";
 
 const generateAccessToken = (user) =>
   jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -12,6 +11,21 @@ const generateRefreshToken = (user) =>
   jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: "7d",
   });
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "lax",
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+const clearCookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "lax",
+  path: "/",
+};
 
 // POST /api/auth/login
 const login = async (req, res) => {
@@ -30,13 +44,9 @@ const login = async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
-    });
+    // Clear any existing cookie first to prevent duplicates
+    res.clearCookie("refreshToken", clearCookieOptions);
+    res.cookie("refreshToken", refreshToken, cookieOptions);
 
     return res.status(200).json({
       success: true,
@@ -77,12 +87,7 @@ const refresh = async (req, res) => {
 
 // POST /api/auth/logout
 const logout = (req, res) => {
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    path: "/",
-  });
+  res.clearCookie("refreshToken", clearCookieOptions);
   return res.status(200).json({ success: true, message: "Logged out" });
 };
 
