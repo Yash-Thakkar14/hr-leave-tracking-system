@@ -5,9 +5,10 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import axios from "axios";
-import API_BASE from "../utils/api";
-import { setAuthToken, registerAuthCallbacks } from "../utils/axiosInstance";
+import axiosInstance, {
+  setAuthToken,
+  registerAuthCallbacks,
+} from "../utils/axiosInstance";
 
 const userContext = createContext();
 
@@ -24,9 +25,7 @@ const AuthContext = ({ children }) => {
 
   const refreshAccessToken = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/auth/refresh`, {
-        withCredentials: true,
-      });
+      const res = await axiosInstance.get("/api/auth/refresh");
       if (res.data.success) {
         setUser(res.data.user);
         setAccessToken(res.data.accessToken);
@@ -43,11 +42,7 @@ const AuthContext = ({ children }) => {
 
   const logout = useCallback(async () => {
     try {
-      await axios.post(
-        `${API_BASE}/api/auth/logout`,
-        {},
-        { withCredentials: true },
-      );
+      await axiosInstance.post("/api/auth/logout", {});
     } catch {
       /* ignore */
     }
@@ -56,12 +51,10 @@ const AuthContext = ({ children }) => {
     setAuthToken(null);
   }, []);
 
-  // Register callbacks with axiosInstance once
   useEffect(() => {
     registerAuthCallbacks(refreshAccessToken, logout);
   }, [refreshAccessToken, logout]);
 
-  // Restore session on app load
   useEffect(() => {
     const restoreSession = async () => {
       await refreshAccessToken();
@@ -79,6 +72,5 @@ const AuthContext = ({ children }) => {
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(userContext);
 export { AuthContext };
