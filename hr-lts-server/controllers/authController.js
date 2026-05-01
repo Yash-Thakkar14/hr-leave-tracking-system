@@ -15,7 +15,7 @@ const generateRefreshToken = (user) =>
 const cookieOptions = {
   httpOnly: true,
   secure: true,
-  sameSite: "lax",
+  sameSite: "none",
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
@@ -23,7 +23,7 @@ const cookieOptions = {
 const clearCookieOptions = {
   httpOnly: true,
   secure: true,
-  sameSite: "lax",
+  sameSite: "none",
   path: "/",
 };
 
