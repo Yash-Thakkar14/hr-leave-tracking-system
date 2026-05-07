@@ -21,7 +21,6 @@ import EmployeeLeaves from "./components/Employee/EmployeeLeaves";
 import LeaveList from "./components/Leave/LeaveList";
 import AddLeave from "./components/Leave/AddLeave";
 import MyLeaves from "./components/Leave/MyLeaves";
-import Unauthorized from "./pages/Unauthorized";
 
 function App() {
   return (
@@ -29,7 +28,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/unauthorized" element={<Unauthorized />} />
 
         <Route
           path="/admin-dashboard"

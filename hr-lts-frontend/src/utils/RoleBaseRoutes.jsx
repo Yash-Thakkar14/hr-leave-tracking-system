@@ -9,7 +9,11 @@ const RoleBaseRoutes = ({ children, requiredRole }) => {
   if (!user) return <Navigate to="/login" />;
 
   if (!requiredRole?.includes(user.role)) {
-    return <Navigate to="/unauthorized" />;
+    return (
+      <Navigate
+        to={user.role === "admin" ? "/admin-dashboard" : "/employee-dashboard"}
+      />
+    );
   }
 
   return children;
