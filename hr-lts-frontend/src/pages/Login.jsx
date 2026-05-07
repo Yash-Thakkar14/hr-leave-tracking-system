@@ -68,7 +68,7 @@ const Login = () => {
           </h2>
           <p className="text-blue-300 text-sm leading-relaxed">
             Manage employee leave requests, track balances, and maintain absence
-            records — all in one place.
+            records - all in one place.
           </p>
         </div>
         <div className="space-y-2">

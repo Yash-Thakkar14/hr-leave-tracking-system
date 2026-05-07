@@ -360,7 +360,11 @@ const LeaveList = () => {
                 rows={3}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="e.g. Approved — enjoy your leave…"
+                placeholder={
+                  modal.action === "approved"
+                    ? "e.g. Approved — enjoy your leave…"
+                    : "e.g. Rejected — please review your request…"
+                }
                 className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3668]/40 focus:border-[#1B3668] transition-colors resize-none"
               />
             </div>
