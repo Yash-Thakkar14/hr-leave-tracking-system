@@ -4,12 +4,12 @@ import bcrypt from "bcrypt";
 
 const generateAccessToken = (user) =>
   jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "8h",
   });
 
 const generateRefreshToken = (user) =>
   jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: "7d",
+    expiresIn: "30d",
   });
 
 const cookieOptions = {
@@ -17,7 +17,7 @@ const cookieOptions = {
   secure: true,
   sameSite: "none",
   path: "/",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  maxAge: 30 * 24 * 60 * 60 * 1000,
 };
 
 const clearCookieOptions = {
